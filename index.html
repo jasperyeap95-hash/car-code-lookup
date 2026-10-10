@@ -1,194 +1,351 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Car Code Lookup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Perodua Car Code Lookup</title>
+
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
-  .wrap{max-width:720px;margin:auto;padding:20px}
-  .card{background:white;border-radius:18px;padding:22px;box-shadow:0 8px 30px rgba(0,0,0,.08);margin-bottom:16px}
-  h1{margin:0 0 6px;font-size:28px}
-  .sub{color:#687386;margin-bottom:20px}
-  input{width:100%;font-size:20px;padding:15px;border:2px solid #d8dfeb;border-radius:12px;text-transform:uppercase;outline:none}
-  input:focus{border-color:#2457e6}
-  button{width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:#2457e6;color:white;font-size:18px;font-weight:bold}
-  button.secondary{background:#e9eef8;color:#24324a}
-  .result{display:none}
-  .row{display:flex;justify-content:space-between;gap:15px;padding:14px 0;border-bottom:1px solid #e8ecf2}
-  .row:last-child{border-bottom:0}
-  .label{color:#718096}
-  .value{font-weight:bold;text-align:right}
-  .model{font-size:25px}
-  .colour{font-size:21px}
-  .ok{color:#168447}
-  .error{color:#c62828;font-weight:bold;padding:12px 0}
-  .hint{font-size:13px;color:#778196;margin-top:10px}
-  .badge{display:inline-block;padding:6px 10px;border-radius:999px;background:#edf2ff;color:#2457e6;font-weight:bold}
+* { box-sizing: border-box; }
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f5fa;
+  color: #172033;
+  margin: 0;
+  padding: 16px;
+}
+.container { max-width: 900px; margin: auto; }
+header {
+  background: #173eea;
+  color: white;
+  padding: 22px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+h1 { margin: 0 0 8px; font-size: 24px; }
+.panel {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 1px solid #d8dfeb;
+}
+input {
+  width: 100%;
+  padding: 14px;
+  font-size: 17px;
+  border: 1px solid #aab7cc;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #173eea;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 6px;
+}
+.result {
+  background: #f8faff;
+  border: 1px solid #d8dfeb;
+  border-radius: 8px;
+  padding: 14px;
+  margin-top: 12px;
+}
+.code {
+  font-size: 25px;
+  font-weight: bold;
+  color: #173eea;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+th, td {
+  text-align: left;
+  padding: 9px;
+  border: 1px solid #ccd4e1;
+}
+th { background: #477fe2; color: white; }
+.table-wrap { overflow-x: auto; }
+.note { color: #667085; font-size: 13px; }
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>🚗 Car Code Lookup</h1>
-    <div class="sub">Enter the CAR Code and Colour Code to get the exact model, variant and colour.</div>
+<div class="container">
 
-    <label><b>Enter CAR Code + Colour Code</b></label>
-    <input id="allCode" placeholder="Example: Y5HZ S43" autocomplete="off">
+<header>
+  <h1>Perodua Car Code Lookup</h1>
+  <div>FIXED VERSION V3 — EXACT VARIANT MATCHING</div>
+</header>
 
-    <button onclick="lookup()">Search</button>
-    <button class="secondary" onclick="clearAll()">Clear</button>
-    <div class="hint">Examples: <b>Y5HZ S43</b> → Perodua TRAZ H • Granite Grey<br>
-    <b>Axia SE Coral Blue</b> → CG1SZ B89<br>
-    <b>Perodua Axia SE</b> → CG1SZ</div>
+<section class="panel">
+  <h2>Search Car / Colour Code</h2>
+  <input id="query"
+    placeholder="Example: BEZZA X, AQ3XZ1, CG1SZ B89">
+
+  <button onclick="search()">Search</button>
+  <button onclick="clearSearch()"
+    style="background:#667085">Clear</button>
+
+  <div class="note">
+    Search by model, variant, internal code or colour code.
   </div>
 
-  <div id="result" class="card result"></div>
+  <div id="output"></div>
+</section>
+
+<section class="panel">
+<h2>Model Codes</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Internal Code</th><th>Model</th><th>Variant</th></tr>
+</thead>
+<tbody id="modelTable"></tbody>
+</table>
+</div>
+</section>
+
+<section class="panel">
+<h2>Colour Codes</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Code</th><th>Official Colour</th><th>Applicable Models</th></tr>
+</thead>
+<tbody id="colourTable"></tbody>
+</table>
+</div>
+
+<h2>Special / Two-Tone</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Code</th><th>Colour</th><th>Description</th></tr>
+</thead>
+<tbody id="specialTable"></tbody>
+</table>
+</div>
+</section>
+
 </div>
 
 <script>
-const models = {
-  "Y5HZ": ["Traz","H"], "Y5XZ": ["Traz","X"],
-  "BP5VZ": ["Alza","AV"], "BP5HZ": ["Alza","H"], "BP5XZ": ["Alza","X"],
-  "AQ3VZ1": ["Bezza","1.3 AV"], "AQ3XZ1": ["Bezza","1.3 X"], "AQ1GZ1": ["Bezza","1.0 G"],
-  "CG1VZ": ["Axia","AV"], "CG1SZ": ["Axia","SE"], "CG1XZ": ["Axia","X"], "CG1GZ": ["Axia","G"],
-  "W5VZ2": ["Aruz","AV"], "W5XZ2": ["Aruz","X"],
-  "U1VZ": ["Ativa","AV"], "U1HZ": ["Ativa","H"], "U1XZ": ["Ativa","X"],
-  "BD5VZ": ["Myvi 1.5","AV"], "BD5HZ": ["Myvi 1.5","H"], "BD5XZ": ["Myvi 1.5","X"],
-  "BD3GZ": ["Myvi 1.3","G"], "BD3GZ1": ["Myvi 1.3 (low spec)","G1"]
-};
+const models = [
+["Y5HZ","Traz","H"],
+["Y5XZ","Traz","X"],
+["BP5VZ","Alza","AV"],
+["BP5HZ","Alza","H"],
+["BP5XZ","Alza","X"],
+["AQ3VZ1","Bezza","1.3 AV"],
+["AQ3XZ1","Bezza","1.3 X"],
+["AQ1GZ1","Bezza","1.0 G"],
+["CG1VZ","Axia","AV"],
+["CG1SZ","Axia","SE"],
+["CG1XZ","Axia","X"],
+["CG1GZ","Axia","G"],
+["W5VZ2","Aruz","AV"],
+["W5XZ2","Aruz","X"],
+["U1VZ","Ativa","AV"],
+["U1HZ","Ativa","H"],
+["U1XZ","Ativa","X"],
+["BD5VZ","Myvi 1.5","AV"],
+["BD5HZ","Myvi 1.5","H"],
+["BD5XZ","Myvi 1.5","X"],
+["BD3GZ","Myvi 1.3","G"],
+["BD3GZ1","Myvi 1.3 (low spec)","G1"]
+];
 
-const colours = {
-  "W09": ["White","All models"],
-  "S28": ["Silver","All models"],
-  "S43": ["Granite Grey","All models"],
-  "R67": ["Red / Maroon","Bezza / Aruz / Alza"],
-  "R76": ["Cranberry Red","Myvi / Axia / Traz"],
-  "B81": ["Electric Blue","Bezza / Myvi"],
-  "B89": ["Coral Blue","Axia"],
-  "W25": ["White / Pearl White","Ativa"],
-  "R75": ["Red","Ativa"],
-  "XJ2": ["2-Tone Red","Black roof + Red body — Ativa"],
-  "XJ3": ["2-Tone White","Black roof + White body — Ativa"],
-  "XL2": ["2-Tone Silver","Black roof + Silver body — Traz"],
-  "XL3": ["2-Tone Blue","Black roof + Blue body — Traz"]
-};
+const colours = [
+["W09","White","All models"],
+["S28","Silver","All models"],
+["S43","Granite Grey","All models"],
+["R67","Red / Maroon","Bezza / Aruz / Alza"],
+["R76","Cranberry Red","Myvi / Axia / Traz"],
+["B81","Electric Blue","Bezza / Myvi"],
+["B89","Coral Blue","Axia"],
+["W25","White / Pearl White","Ativa"],
+["R75","Red","Ativa"]
+];
 
-function normalizeText(s){
-  return s.toUpperCase().replace(/[–—]/g,"-").replace(/\s+/g," ").trim();
+const special = [
+["XJ2","2-Tone Red","Black roof + Red body — Ativa"],
+["XJ3","2-Tone White","Black roof + White body — Ativa"],
+["XL2","2-Tone Silver","Black roof + Silver body — Traz"],
+["XL3","2-Tone Blue","Black roof + Blue body — Traz"]
+];
+
+function normalize(value) {
+  return value.toUpperCase()
+    .replace(/[^A-Z0-9.]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
 }
 
-function findModelFromText(raw){
-  const t=normalizeText(raw);
-  // Exact code first.
-  if(models[t]) return t;
+function tokensOf(value) {
+  return normalize(value).split(" ").filter(Boolean);
+}
 
-  // Find model code embedded in the input.
-  const embedded=Object.keys(models).sort((a,b)=>b.length-a.length).find(x=>t.includes(x));
-  if(embedded) return embedded;
+function renderTables() {
+  document.getElementById("modelTable").innerHTML =
+    models.map(m =>
+      `<tr><td>${m[0]}</td><td>${m[1]}</td><td>${m[2]}</td></tr>`
+    ).join("");
 
-  // Match model + variant from the user's words.
-  const aliases={
-    "TRAZ":"TRAZ",
-    "ALZA":"ALZA",
-    "BEZZA":"BEZZA",
-    "AXIA":"AXIA",
-    "ARUZ":"ARUZ",
-    "ATIVA":"ATIVA",
-    "MYVI":"MYVI"
-  };
+  document.getElementById("colourTable").innerHTML =
+    colours.map(c =>
+      `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td></tr>`
+    ).join("");
 
-  let best=null, score=-1;
-  for(const [code,[model,variant]] of Object.entries(models)){
-    const base=model.replace(" (low spec)","").toUpperCase();
-    let s=0;
-    if(t.includes(base)) s+=3;
-    const v=variant.toUpperCase();
-    if(t.includes(v)) s+=2;
-    // Accept common forms such as "MYVI 1.5 AV", "AXIA SE", "TRAZ H".
-    if(t.includes("PERODUA "+base)) s+=1;
-    if(s>score){best=code;score=s;}
+  document.getElementById("specialTable").innerHTML =
+    special.map(s =>
+      `<tr><td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`
+    ).join("");
+}
+
+function findModel(input) {
+  const tokens = tokensOf(input);
+
+  // 1. Exact model code has priority.
+  const exactCode = models.find(m => tokens.includes(m[0]));
+  if (exactCode) return [exactCode];
+
+  // 2. BEZZA: exact, independent variant rules.
+  if (tokens.includes("BEZZA")) {
+    let code = "";
+
+    if (tokens.includes("1.3") && tokens.includes("AV")) {
+      code = "AQ3VZ1";
+    } else if (tokens.includes("1.3") && tokens.includes("X")) {
+      code = "AQ3XZ1";
+    } else if (tokens.includes("AV")) {
+      code = "AQ3VZ1";
+    } else if (tokens.includes("X")) {
+      code = "AQ3XZ1";
+    } else if (tokens.includes("1.0") && tokens.includes("G")) {
+      code = "AQ1GZ1";
+    }
+
+    if (code) return models.filter(m => m[0] === code);
+    return models.filter(m => m[1] === "Bezza");
   }
-  return score>=3 ? best : null;
-}
 
-function findColourFromText(raw){
-  const t=normalizeText(raw);
+  // 3. Identify other models.
+  let modelName = "";
 
-  if(colours[t]) return t;
-
-  const embedded=Object.keys(colours).sort((a,b)=>b.length-a.length).find(x=>t.includes(x));
-  if(embedded) return embedded;
-
-  let best=null, score=-1;
-  for(const [code,[colour]] of Object.entries(colours)){
-    const c=colour.toUpperCase();
-    let s=0;
-    if(t.includes(c)) s=4;
-    // Flexible common colour wording.
-    const words=c.split(/[\s/]+/).filter(Boolean);
-    const matched=words.filter(w=>t.includes(w)).length;
-    s=Math.max(s, matched);
-    if(s>score){best=code;score=s;}
+  if (tokens.includes("MYVI") && tokens.includes("G1")) {
+    modelName = "Myvi 1.3 (low spec)";
+  } else if (tokens.includes("MYVI") && tokens.includes("1.3")) {
+    modelName = "Myvi 1.3";
+  } else if (tokens.includes("MYVI") && tokens.includes("1.5")) {
+    modelName = "Myvi 1.5";
+  } else if (tokens.includes("MYVI")) {
+    modelName = "Myvi";
+  } else if (tokens.includes("TRAZ")) {
+    modelName = "Traz";
+  } else if (tokens.includes("ALZA")) {
+    modelName = "Alza";
+  } else if (tokens.includes("AXIA")) {
+    modelName = "Axia";
+  } else if (tokens.includes("ARUZ")) {
+    modelName = "Aruz";
+  } else if (tokens.includes("ATIVA")) {
+    modelName = "Ativa";
   }
-  return score>=1 ? best : null;
+
+  if (!modelName) return [];
+
+  const pool = models.filter(m => m[1] === modelName);
+  if (!pool.length) return [];
+
+  let variant = "";
+
+  if (tokens.includes("AV")) variant = "AV";
+  else if (tokens.includes("SE")) variant = "SE";
+  else if (tokens.includes("G1")) variant = "G1";
+  else if (tokens.includes("H")) variant = "H";
+  else if (tokens.includes("X")) variant = "X";
+  else if (tokens.includes("G")) variant = "G";
+
+  if (!variant) return pool;
+
+  return pool.filter(m => m[2].toUpperCase() === variant);
 }
 
-function lookup(){
-  const raw=document.getElementById("allCode").value.trim();
-  const box=document.getElementById("result");
-  box.style.display="block";
+function search() {
+  const input = document.getElementById("query").value.trim();
+  const output = document.getElementById("output");
 
-  if(!raw){
-    box.innerHTML='<div class="error">Please enter a CAR Code + Colour Code, or model + colour.</div>';
+  if (!input) {
+    output.innerHTML = "<div class='result'>Please enter a search term.</div>";
     return;
   }
 
-  const carCode=findModelFromText(raw);
-  const colourCode=findColourFromText(raw);
+  const tokens = tokensOf(input);
+  const matchedModels = findModel(input);
 
-  if(!carCode && !colourCode){
-    box.innerHTML='<div class="error">❌ No matching model or colour found</div><div class="hint">Try: CG1SZ B89, Axia SE Coral Blue, or Perodua Traz H Granite Grey.</div>';
-    return;
+  const matchedColours = colours.filter(c => tokens.includes(c[0]));
+  const matchedSpecial = special.filter(s => tokens.includes(s[0]));
+
+  let html = "";
+
+  if (matchedModels.length) {
+    html += matchedModels.map(m => `
+      <div class="result">
+        <div>Internal Model Code</div>
+        <div class="code">${m[0]}</div>
+        <div>Model: <b>${m[1]}</b></div>
+        <div>Variant: <b>${m[2]}</b></div>
+      </div>
+    `).join("");
   }
 
-  let out='';
-
-  if(carCode){
-    const [model,variant]=models[carCode];
-    out += `<div class="row"><div class="label">CAR Code</div><div class="value"><span class="badge">${carCode}</span></div></div>`;
-    out += `<div class="row"><div class="label">Model</div><div class="value model">Perodua ${model.toUpperCase()}</div></div>`;
-    out += `<div class="row"><div class="label">Variant</div><div class="value">${variant}</div></div>`;
-  } else {
-    out += `<div class="row"><div class="label">CAR Code</div><div class="value error">Not found</div></div>`;
+  if (matchedColours.length) {
+    html += matchedColours.map(c => `
+      <div class="result">
+        <div>Colour Code: <span class="code">${c[0]}</span></div>
+        <div>Official Colour: <b>${c[1]}</b></div>
+        <div>Applicable Models: ${c[2]}</div>
+      </div>
+    `).join("");
   }
 
-  if(colourCode){
-    const [colour]=colours[colourCode];
-    out += `<div class="row"><div class="label">Colour Code</div><div class="value"><span class="badge">${colourCode}</span></div></div>`;
-    out += `<div class="row"><div class="label">Colour</div><div class="value colour">${colour}</div></div>`;
-  } else {
-    out += `<div class="row"><div class="label">Colour Code</div><div class="value error">Not found</div></div>`;
+  if (matchedSpecial.length) {
+    html += matchedSpecial.map(s => `
+      <div class="result">
+        <div>Special Colour Code: <span class="code">${s[0]}</span></div>
+        <div>Colour: <b>${s[1]}</b></div>
+        <div>${s[2]}</div>
+      </div>
+    `).join("");
   }
 
-  if(carCode && colourCode){
-    const model=models[carCode][0].replace(" (low spec)","").toUpperCase();
-    const applicable=colours[colourCode][1].toUpperCase();
-    const compatible=applicable==="ALL MODELS" || applicable.includes(model.split(" ")[0]);
-    out += `<div class="row"><div class="label">Compatibility</div><div class="value ${compatible?'ok':''}">${compatible?'✅ Compatible':'⚠️ Please check model/colour combination'}</div></div>`;
+  if (!html && matchedModels.length === 0) {
+    html = "<div class='result'>No match found. Please check the model, variant or code.</div>";
   }
 
-  box.innerHTML=out;
+  output.innerHTML = html;
 }
 
-function clearAll(){
-  document.getElementById("allCode").value="";
-  document.getElementById("result").style.display="none";
-  document.getElementById("allCode").focus();
+function clearSearch() {
+  document.getElementById("query").value = "";
+  document.getElementById("output").innerHTML = "";
 }
 
-document.getElementById("allCode").addEventListener("keydown",e=>{if(e.key==="Enter")lookup();});
+document.getElementById("query").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") search();
+});
+
+renderTables();
 </script>
 </body>
 </html>
